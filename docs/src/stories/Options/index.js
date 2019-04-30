@@ -13,18 +13,21 @@ class WithOptions extends PureComponent {
     this.state = {
       clearSearchOnChange: false,
       keepTreeOnSearch: false,
+      keepOpenOnSelect: false,
       simpleSelect: false,
+      radioSelect: false,
       showPartiallySelected: false,
       disabled: false,
-      readOnly: false
+      readOnly: false,
+      hierarchical: false,
     }
   }
 
   onChange = (curNode, selectedNodes) => {
     console.log('onChange::', curNode, selectedNodes)
   }
-  onAction = ({ action, node }) => {
-    console.log(`onAction:: [${action}]`, node)
+  onAction = ({ action, id }) => {
+    console.log(`onAction:: [${action}]`, id)
   }
   onNodeToggle = curNode => {
     console.log('onNodeToggle::', curNode)
@@ -35,7 +38,17 @@ class WithOptions extends PureComponent {
   }
 
   render() {
-    const { clearSearchOnChange, keepTreeOnSearch, simpleSelect, showPartiallySelected, disabled, readOnly } = this.state
+    const {
+      clearSearchOnChange,
+      keepTreeOnSearch,
+      keepOpenOnSelect,
+      simpleSelect,
+      radioSelect,
+      showPartiallySelected,
+      disabled,
+      readOnly,
+      hierarchical,
+    } = this.state
 
     return (
       <div>
@@ -46,28 +59,55 @@ class WithOptions extends PureComponent {
             border: '1px solid #ccc',
             borderRadius: '4px',
             marginBottom: '20px',
-            padding: 10
+            padding: 10,
           }}
         >
-          <Checkbox label="Clear search on selection" value="clearSearchOnChange" checked={clearSearchOnChange} onChange={this.onOptionsChange} />
-          <Checkbox label="Keep tree on search" value="keepTreeOnSearch" checked={keepTreeOnSearch} onChange={this.onOptionsChange} />
+          <Checkbox
+            label="Clear search on selection"
+            value="clearSearchOnChange"
+            checked={clearSearchOnChange}
+            onChange={this.onOptionsChange}
+          />
+          <Checkbox
+            label="Keep tree on search"
+            value="keepTreeOnSearch"
+            checked={keepTreeOnSearch}
+            onChange={this.onOptionsChange}
+          />
+          <Checkbox
+            label="Keep tree open on select"
+            value="keepOpenOnSelect"
+            checked={keepOpenOnSelect}
+            onChange={this.onOptionsChange}
+          />
           <Checkbox label="Simple Select" value="simpleSelect" checked={simpleSelect} onChange={this.onOptionsChange} />
-          <Checkbox label="Show Partially Selected" value="showPartiallySelected" checked={showPartiallySelected} onChange={this.onOptionsChange} />
+          <Checkbox label="Radio Select" value="radioSelect" checked={radioSelect} onChange={this.onOptionsChange} />
+          <Checkbox
+            label="Show Partially Selected"
+            value="showPartiallySelected"
+            checked={showPartiallySelected}
+            onChange={this.onOptionsChange}
+          />
           <Checkbox label="Disabled" value="disabled" checked={disabled} onChange={this.onOptionsChange} />
           <Checkbox label="Read Only" value="readOnly" checked={readOnly} onChange={this.onOptionsChange} />
+          <Checkbox label="Hierarchical" value="hierarchical" checked={hierarchical} onChange={this.onOptionsChange} />
         </div>
         <div>
           <DropdownTreeSelect
+            id="rdts"
             data={data}
             onChange={this.onChange}
             onAction={this.onAction}
             onNodeToggle={this.onNodeToggle}
             clearSearchOnChange={clearSearchOnChange}
             keepTreeOnSearch={keepTreeOnSearch}
+            keepOpenOnSelect={keepOpenOnSelect}
             simpleSelect={simpleSelect}
+            radioSelect={radioSelect}
             showPartiallySelected={showPartiallySelected}
             disabled={disabled}
             readOnly={readOnly}
+            hierarchical={hierarchical}
           />
         </div>
       </div>

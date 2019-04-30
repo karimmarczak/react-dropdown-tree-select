@@ -11,16 +11,16 @@ test('renders actions', t => {
       title: 'action',
       className: 'cn0-0-0',
       text: 'hello',
-      junk: '1'
-    }
+      junk: '1',
+    },
   ]
 
-  const wrapper = toJson(shallow(<Actions actions={actions} />))
+  const wrapper = toJson(shallow(<Actions actions={actions} id="snapshot" />))
 
   t.snapshot(wrapper)
 })
 
 test('returns null if actions are empty', t => {
-  t.snapshot(toJson(shallow(<Actions actions={undefined} />)))
-  t.snapshot(toJson(shallow(<Actions actions={[]} />)))
+  t.snapshot(toJson(shallow(<Actions actions={undefined} id="snapshot1" />)))
+  t.snapshot(toJson(shallow(<Actions actions={[]} id="snapshot2" />)))
 })

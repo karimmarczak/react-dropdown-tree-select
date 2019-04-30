@@ -23,9 +23,9 @@ test('renders tree node', t => {
       {
         id: 'NOT',
         title: 'NOT',
-        className: 'fa fa-ban'
-      }
-    ]
+        className: 'fa fa-ban',
+      },
+    ],
   }
 
   const wrapper = shallow(<TreeNode {...node} />)
@@ -39,13 +39,17 @@ test('notifies node toggle changes', t => {
     _parent: '0-0',
     label: 'item0-0-0',
     value: 'value0-0-0',
-    className: 'cn0-0-0'
+    className: 'cn0-0-0',
   }
 
   const onChange = spy()
 
   const wrapper = mount(<TreeNode {...node} onNodeToggle={onChange} />)
-  wrapper.find('.toggle').simulate('click')
+  const event = {
+    stopPropagation: spy(),
+    nativeEvent: { stopImmediatePropagation: spy() },
+  }
+  wrapper.find('.toggle').simulate('click', event)
   t.true(onChange.calledWith('0-0-0'))
 })
 
@@ -55,7 +59,7 @@ test('remove gap during search', t => {
     _parent: '0-0',
     label: 'item0-0-0',
     value: 'value0-0-0',
-    className: 'cn0-0-0'
+    className: 'cn0-0-0',
   }
 
   const wrapper = shallow(<TreeNode {...node} searchModeOn />)
@@ -70,7 +74,7 @@ test('disable checkbox if the node has disabled status', t => {
     disabled: true,
     label: 'item0-0-0',
     value: 'value0-0-0',
-    className: 'cn0-0-0'
+    className: 'cn0-0-0',
   }
 
   const wrapper = shallow(<TreeNode {...node} searchModeOn />)
@@ -86,8 +90,8 @@ test('should render data attributes', t => {
     value: 'value0-0-0',
     dataset: {
       first: 'john',
-      last: 'smith'
-    }
+      last: 'smith',
+    },
   }
 
   const wrapper = shallow(<TreeNode {...node} />)

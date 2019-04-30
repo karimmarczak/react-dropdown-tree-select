@@ -14,7 +14,20 @@ const cx = cn.bind(styles)
 const isLeaf = children => isEmpty(children)
 
 const getNodeCx = props => {
-  const { keepTreeOnSearch, _children, matchInChildren, disabled, partial, hide, className, showPartiallySelected, readOnly } = props
+  const {
+    keepTreeOnSearch,
+    keepChildrenOnSearch,
+    _children,
+    matchInChildren,
+    matchInParent,
+    disabled,
+    partial,
+    hide,
+    className,
+    showPartiallySelected,
+    readOnly,
+    checked,
+  } = props
 
   return cx(
     'node',
@@ -24,8 +37,10 @@ const getNodeCx = props => {
       disabled,
       hide,
       'match-in-children': keepTreeOnSearch && matchInChildren,
+      'match-in-parent': keepTreeOnSearch && keepChildrenOnSearch && matchInParent,
       partial: showPartiallySelected && partial,
-      readOnly
+      readOnly,
+      checked,
     },
     className
   )
@@ -47,18 +62,22 @@ class TreeNode extends PureComponent {
     partial: PropTypes.bool,
     dataset: PropTypes.object,
     keepTreeOnSearch: PropTypes.bool,
+    keepChildrenOnSearch: PropTypes.bool,
     searchModeOn: PropTypes.bool,
     onNodeToggle: PropTypes.func,
     onAction: PropTypes.func,
     onCheckboxChange: PropTypes.func,
     simpleSelect: PropTypes.bool,
+    radioSelect: PropTypes.bool,
     showPartiallySelected: PropTypes.bool,
-    readOnly: PropTypes.bool
+    readOnly: PropTypes.bool,
+    clientId: PropTypes.string,
   }
 
   render() {
     const {
       simpleSelect,
+      radioSelect,
       keepTreeOnSearch,
       _id,
       _children,
@@ -77,7 +96,8 @@ class TreeNode extends PureComponent {
       onNodeToggle,
       onCheckboxChange,
       showPartiallySelected,
-      readOnly
+      readOnly,
+      clientId,
     } = this.props
     const liCx = getNodeCx(this.props)
     const style = keepTreeOnSearch || !searchModeOn ? { paddingLeft: `${(_depth || 0) * 20}px` } : {}
@@ -94,9 +114,11 @@ class TreeNode extends PureComponent {
           value={value}
           disabled={disabled}
           simpleSelect={simpleSelect}
+          radioSelect={radioSelect}
           onCheckboxChange={onCheckboxChange}
           showPartiallySelected={showPartiallySelected}
           readOnly={readOnly}
+          clientId={clientId}
         />
         <Actions actions={actions} onAction={onAction} id={_id} readOnly={readOnly} />
       </li>

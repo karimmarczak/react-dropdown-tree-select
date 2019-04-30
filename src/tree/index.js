@@ -17,19 +17,22 @@ class Tree extends Component {
   static propTypes = {
     data: PropTypes.object,
     keepTreeOnSearch: PropTypes.bool,
+    keepChildrenOnSearch: PropTypes.bool,
     searchModeOn: PropTypes.bool,
     onChange: PropTypes.func,
     onNodeToggle: PropTypes.func,
     onAction: PropTypes.func,
     onCheckboxChange: PropTypes.func,
     simpleSelect: PropTypes.bool,
+    radioSelect: PropTypes.bool,
     showPartiallySelected: PropTypes.bool,
     pageSize: PropTypes.number,
-    readOnly: PropTypes.bool
+    readOnly: PropTypes.bool,
+    clientId: PropTypes.string,
   }
 
   static defaultProps = {
-    pageSize: 100
+    pageSize: 100,
   }
 
   constructor(props) {
@@ -38,7 +41,7 @@ class Tree extends Component {
     this.computeInstanceProps(props)
 
     this.state = {
-      items: this.allVisibleNodes.slice(0, this.props.pageSize)
+      items: this.allVisibleNodes.slice(0, this.props.pageSize),
     }
   }
 
@@ -61,31 +64,39 @@ class Tree extends Component {
     const {
       data,
       keepTreeOnSearch,
+      keepChildrenOnSearch,
       searchModeOn,
       simpleSelect,
+      radioSelect,
       showPartiallySelected,
       readOnly,
       onAction,
       onChange,
       onCheckboxChange,
-      onNodeToggle
+      onNodeToggle,
+      clientId,
     } = props
     const items = []
     data.forEach(node => {
       if (shouldRenderNode(node, searchModeOn, data)) {
-        items.push(<TreeNode
-          keepTreeOnSearch={keepTreeOnSearch}
-          key={node._id}
-          {...node}
-          searchModeOn={searchModeOn}
-          onChange={onChange}
-          onCheckboxChange={onCheckboxChange}
-          onNodeToggle={onNodeToggle}
-          onAction={onAction}
-          simpleSelect={simpleSelect}
-          showPartiallySelected={showPartiallySelected}
-          readOnly={readOnly}
-        />)
+        items.push(
+          <TreeNode
+            keepTreeOnSearch={keepTreeOnSearch}
+            keepChildrenOnSearch={keepChildrenOnSearch}
+            key={node._id}
+            {...node}
+            searchModeOn={searchModeOn}
+            onChange={onChange}
+            onCheckboxChange={onCheckboxChange}
+            onNodeToggle={onNodeToggle}
+            onAction={onAction}
+            simpleSelect={simpleSelect}
+            radioSelect={radioSelect}
+            showPartiallySelected={showPartiallySelected}
+            readOnly={readOnly}
+            clientId={clientId}
+          />
+        )
       }
     })
     return items

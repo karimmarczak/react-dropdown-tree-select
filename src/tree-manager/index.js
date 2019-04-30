@@ -4,14 +4,27 @@ import { isEmpty } from '../utils'
 import flattenTree from './flatten-tree'
 
 class TreeManager {
-  constructor(tree, simple, showPartialState) {
-    this._src = tree
-    const { list, defaultValues } = flattenTree(JSON.parse(JSON.stringify(tree)), simple, showPartialState)
+  constructor({ data, simpleSelect, radioSelect, showPartiallySelected, hierarchical, rootPrefixId }) {
+    this._src = data
+    const { list, defaultValues, singleSelectedNode } = flattenTree({
+      tree: JSON.parse(JSON.stringify(data)),
+      simple: simpleSelect,
+      radio: radioSelect,
+      showPartialState: showPartiallySelected,
+      hierarchical,
+      rootPrefixId,
+    })
     this.tree = list
     this.defaultValues = defaultValues
-    this.simpleSelect = simple
-    this.showPartialState = showPartialState
+    this.simpleSelect = simpleSelect
+    this.radioSelect = radioSelect
+    this.showPartialState = !hierarchical && showPartiallySelected
     this.searchMaps = new Map()
+    this.hierarchical = hierarchical
+    if ((simpleSelect || radioSelect) && singleSelectedNode) {
+      // Remembers initial check on single select dropdowns
+      this.currentChecked = singleSelectedNode._id
+    }
   }
 
   getNodeById(id) {
@@ -64,7 +77,22 @@ class TreeManager {
     }
   }
 
-  filterTree(searchTerm, keepTreeOnSearch) {
+  addChildrenToTree(ids, tree, matches) {
+    if (ids !== undefined) {
+      ids.forEach(id => {
+        if (matches && matches.includes(id)) {
+          // if a child is found by search anyways, don't display it as a child here
+          return
+        }
+        const node = this.getNodeById(id)
+        node.matchInParent = true
+        tree.set(id, node)
+        this.addChildrenToTree(node._children, tree)
+      })
+    }
+  }
+
+  filterTree(searchTerm, keepTreeOnSearch, keepChildrenOnSearch) {
     const matches = this.getMatches(searchTerm.toLowerCase())
 
     const matchTree = new Map()
@@ -77,6 +105,10 @@ class TreeManager {
         this.addParentsToTree(node._parent, matchTree)
       }
       matchTree.set(m, node)
+      if (keepTreeOnSearch && keepChildrenOnSearch) {
+        // add children nodes after a found match
+        this.addChildrenToTree(node._children, matchTree, matches)
+      }
     })
 
     const allNodesHidden = matches.length === 0
@@ -104,34 +136,43 @@ class TreeManager {
     return this.tree
   }
 
-  togglePreviousChecked(id) {
+  togglePreviousChecked(id, checked) {
     const prevChecked = this.currentChecked
 
     // if id is same as previously selected node, then do nothing (since it's state is already set correctly by setNodeCheckedState)
     // but if they ar not same, then toggle the previous one
     if (prevChecked && prevChecked !== id) this.getNodeById(prevChecked).checked = false
 
-    this.currentChecked = id
+    this.currentChecked = checked ? id : null
   }
 
   setNodeCheckedState(id, checked) {
     const node = this.getNodeById(id)
     node.checked = checked
 
+    // TODO: this can probably be combined with the same check in the else block. investigate in a separate release.
     if (this.showPartialState) {
       node.partial = false
     }
 
     if (this.simpleSelect) {
-      this.togglePreviousChecked(id)
+      this.togglePreviousChecked(id, checked)
+    } else if (this.radioSelect) {
+      this.togglePreviousChecked(id, checked)
+      if (this.showPartialState) {
+        this.partialCheckParents(node)
+      }
+      if (!checked) {
+        this.unCheckParents(node)
+      }
     } else {
-      this.toggleChildren(id, checked)
+      if (!this.hierarchical) this.toggleChildren(id, checked)
 
       if (this.showPartialState) {
         this.partialCheckParents(node)
       }
 
-      if (!checked) {
+      if (!this.hierarchical && !checked) {
         this.unCheckParents(node)
       }
     }
@@ -195,6 +236,10 @@ class TreeManager {
   }
 
   getTags() {
+    if (this.radioSelect || this.simpleSelect) {
+      return this._getTagsForSingleSelect()
+    }
+
     const tags = []
     const visited = {}
     const markSubTreeVisited = node => {
@@ -206,14 +251,27 @@ class TreeManager {
       if (visited[key]) return
 
       if (node.checked) {
-        // Parent node, so no need to walk children
         tags.push(node)
-        markSubTreeVisited(node)
       } else {
         visited[key] = true
       }
+      if (node.checked && !this.hierarchical) {
+        // Parent node, so no need to walk children
+        markSubTreeVisited(node)
+      }
     })
     return tags
+  }
+
+  getTreeAndTags() {
+    return { tree: this.tree, tags: this.getTags() }
+  }
+
+  _getTagsForSingleSelect() {
+    if (this.currentChecked) {
+      return [this.getNodeById(this.currentChecked)]
+    }
+    return []
   }
 }
 

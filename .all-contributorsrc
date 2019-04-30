@@ -206,6 +206,55 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "mobilutz",
+      "name": "Lutz Lengemann",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/491877?v=4",
+      "profile": "http://www.dealzeit.de",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Eainde",
+      "name": "Akshay Dipta",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/26381655?v=4",
+      "profile": "https://github.com/Eainde",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "statico",
+      "name": "Ian Langworth ☠",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/137158?v=4",
+      "profile": "https://langworth.com/",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "stoberov",
+      "name": "Stoyan Berov",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/5932031?v=4",
+      "profile": "https://github.com/stoberov",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "ellinge",
+      "name": "ellinge",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/17863113?v=4",
+      "profile": "https://github.com/ellinge",
+      "contributions": [
+        "code",
+        "ideas",
+        "maintenance"
+      ]
     }
-  ]
+  ],
+  "contributorsPerLine": 7
 }

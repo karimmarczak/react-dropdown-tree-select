@@ -92,30 +92,35 @@ const tree = [
 }
 ```
  * @param  {[type]} tree              The incoming tree object
- * @param  {[bool]} simple            Whether its in Single slect mode (simple dropdown)
+ * @param  {[bool]} simple            Whether its in Single select mode (simple dropdown)
+ * @param  {[bool]} radio             Whether its in Radio select mode (radio dropdown)
  * @param  {[bool]} showPartialState  Whether to show partially checked state
+ * @param  {[string]} rootPrefixId    The prefix to use when setting root node ids
  * @return {object}                   The flattened list
  */
-function flattenTree(tree, simple, showPartialState) {
+function flattenTree({ tree, simple, radio, showPartialState, hierarchical, rootPrefixId }) {
   const forest = Array.isArray(tree) ? tree : [tree]
 
   // eslint-disable-next-line no-use-before-define
-  const { list, defaultValues } = walkNodes({
+  return walkNodes({
     nodes: forest,
     simple,
-    showPartialState
+    radio,
+    showPartialState,
+    hierarchical,
+    rootPrefixId,
   })
-  return { list, defaultValues }
 }
 
 /**
  * If the node didn't specify anything on its own
  * figure out the initial state based on parent
- * @param {object} node [current node]
- * @param {object} parent [node's immediate parent]
+ * @param {object} node           [current node]
+ * @param {object} parent         [node's immediate parent]
+ * @param {bool}   inheritChecked [if checked should be inherited]
  */
-function setInitialStateProps(node, parent = {}) {
-  const stateProps = ['checked', 'disabled']
+function setInitialStateProps(node, parent = {}, inheritChecked = true) {
+  const stateProps = inheritChecked ? ['checked', 'disabled'] : ['disabled']
   for (let index = 0; index < stateProps.length; index++) {
     const prop = stateProps[index]
 
@@ -126,7 +131,18 @@ function setInitialStateProps(node, parent = {}) {
   }
 }
 
-function walkNodes({ nodes, list = new Map(), parent, depth = 0, simple, showPartialState, defaultValues = [] }) {
+function walkNodes({
+  nodes,
+  parent,
+  depth = 0,
+  simple,
+  radio,
+  showPartialState,
+  hierarchical,
+  rootPrefixId,
+  _rv = { list: new Map(), defaultValues: [], singleSelectedNode: null },
+}) {
+  const single = simple || radio
   nodes.forEach((node, i) => {
     node._depth = depth
 
@@ -135,33 +151,51 @@ function walkNodes({ nodes, list = new Map(), parent, depth = 0, simple, showPar
       node._parent = parent._id
       parent._children.push(node._id)
     } else {
-      node._id = node.id || `${i}`
+      node._id = node.id || `${rootPrefixId ? `${rootPrefixId}-${i}` : i}`
     }
 
-    if (node.isDefaultValue) {
-      defaultValues.push(node._id)
+    if (single && node.checked) {
+      if (_rv.singleSelectedNode) {
+        node.checked = false
+      } else {
+        _rv.singleSelectedNode = node
+      }
+    }
+
+    if (single && node.isDefaultValue && _rv.singleSelectedNode && !_rv.singleSelectedNode.isDefaultValue) {
+      // Default value has precedence, uncheck previous value
+      _rv.singleSelectedNode.checked = false
+      _rv.singleSelectedNode = null
+    }
+
+    if (node.isDefaultValue && (!single || _rv.defaultValues.length === 0)) {
+      _rv.defaultValues.push(node._id)
       node.checked = true
+      if (single) {
+        _rv.singleSelectedNode = node
+      }
     }
 
-    setInitialStateProps(node, parent)
+    if (!hierarchical || radio) setInitialStateProps(node, parent, !radio)
 
-    list.set(node._id, node)
+    _rv.list.set(node._id, node)
     if (!simple && node.children) {
       node._children = []
       walkNodes({
         nodes: node.children,
-        list,
         parent: node,
         depth: depth + 1,
+        radio,
         showPartialState,
-        defaultValues
+        hierarchical,
+        _rv,
       })
 
       if (showPartialState && !node.checked) {
         node.partial = getPartialState(node)
 
         // re-check if all children are checked. if so, check thyself
-        if (!isEmpty(node.children) && node.children.every(c => c.checked)) {
+        if (!single && !isEmpty(node.children) && node.children.every(c => c.checked)) {
           node.checked = true
         }
       }
@@ -169,7 +203,8 @@ function walkNodes({ nodes, list = new Map(), parent, depth = 0, simple, showPar
       node.children = undefined
     }
   })
-  return { list, defaultValues }
+
+  return _rv
 }
 
 export default flattenTree
